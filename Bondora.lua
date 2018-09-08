@@ -1,5 +1,5 @@
 WebBanking {
-  version = 0.1,
+  version = 1.0,
   url = "https://www.bondora.com",
   description = "Bondora Account",
   services = { "Bondora Account" }
