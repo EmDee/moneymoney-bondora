@@ -1,5 +1,5 @@
 WebBanking {
-  version = 1.0,
+  version = 1.1,
   url = "https://www.bondora.com",
   description = "Bondora Account",
   services = { "Bondora Account" }
@@ -26,7 +26,7 @@ function InitializeSession (protocol, bankCode, username, username2, password, u
   html:xpath("//input[@name='Email']"):attr("value", username)
   html:xpath("//input[@name='Password']"):attr("value", password)
 
-  connection:request(html:xpath("//form[@action='/login']//button[@type='submit']"):click())
+  connection:request(html:xpath("//form[contains(@action, 'login')]//button[@type='submit']"):click())
 
   if string.match(connection:getBaseURL(), 'login') then
     MM.printStatus("Login Failed")
@@ -65,10 +65,8 @@ function RefreshAccount (account, since)
 
   local value = summary.Stats[1].Value
   local profit = summary.Stats[2].Value
-  profit = string.gsub(profit, "€", "")
-  value = string.gsub(value, "€", "")
-  profit = string.gsub(profit, "%.", "")
-  value = string.gsub(value, "%.", "")
+  profit = string.gsub(profit, "[^%d]", "")
+  value = string.gsub(value, "[^%d]", "")
   
   local security = {
     name = "Account",
