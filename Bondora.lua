@@ -1,5 +1,5 @@
 WebBanking {
-  version = 1.2,
+  version = 1.3,
   url = "https://www.bondora.com",
   description = "Bondora Account",
   services = { "Bondora Account" }
@@ -11,17 +11,20 @@ local html
 
 -- Constants
 local currency = "EUR"
+local locale = "en"
+local baseUrl = "https://www.bondora.com/" .. locale
 
 function SupportsBank (protocol, bankCode)
   return protocol == ProtocolWebBanking and bankCode == "Bondora Account"
 end
 
 function InitializeSession (protocol, bankCode, username, username2, password, username3)
-  MM.printStatus("Login")
+  local url = baseUrl .. "/login"
+  MM.printStatus("Login: " .. url)
 
   -- Fetch login page
-  connection.language = "de-de"
-  html = HTML(connection:get("https://www.bondora.com/de/login"))
+  connection.language = "en-US"
+  html = HTML(connection:get(url))
 
   html:xpath("//input[@name='Email']"):attr("value", username)
   html:xpath("//input[@name='Password']"):attr("value", password)
@@ -51,7 +54,7 @@ function AccountSummary ()
   local headers = {accept = "application/json"}
   local content = connection:request(
     "GET",
-    "https://www.bondora.com/de/dashboard/overviewnumbers/",
+    baseUrl .. "/dashboard/overviewnumbers/",
     "",
     "application/json",
     headers
@@ -61,22 +64,35 @@ end
 
 function RefreshAccount (account, since)
   local s = {}
+
   summary = AccountSummary()
 
   local value = summary.Stats[1].ValueTooltip
   local profit = summary.Stats[2].ValueTooltip
-  profit = string.gsub(profit, "[^%d]", "")
-  value = string.gsub(value, "[^%d]", "")
+  local numberRegex = "[^%d|.|-]"
 
-  print("Profit (in cents): " .. tonumber(profit))
-  print("Value (in cents): " .. tonumber(value))
+  print("Profit (raw): " .. profit)
+  print("Value (raw): " .. value)
+
+  profit = string.gsub(profit, numberRegex, "")
+  value = string.gsub(value, numberRegex, "")
+
+  print("Profit (extracted number): " .. profit)
+  print("Value (extracted number): " .. value)
+
+  print("Profit (in Euros): " .. tonumber(profit))
+  print("Value (in Euros): " .. tonumber(value))
+
+  local purchasePrice = (tonumber(value) - tonumber(profit))
+
+  print("Purchase price: " .. purchasePrice)
   
   local security = {
     name = "Account",
-    price = tonumber(value) / 100,
+    price = tonumber(value),
     quantity = 1,
-    purchasePrice = (tonumber(value) - tonumber(profit)) / 100,
-    curreny = nil,
+    purchasePrice = purchasePrice,
+    currency = nil,
   }
 
   table.insert(s, security)
@@ -84,8 +100,9 @@ function RefreshAccount (account, since)
   return {securities = s}
 end
 
-
 function EndSession ()
-  connection:get("https://www.bondora.com/de/authorize/logout/")
+  local url = baseUrl .. "/authorize/logout/"
+  MM.printStatus("Logout: " .. url)
+  connection:get(url)
   return nil
 end
