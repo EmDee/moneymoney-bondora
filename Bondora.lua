@@ -39,15 +39,23 @@ end
 
 function ListAccounts (knownAccounts)
   -- Parse account info
-  local account = {
-    name = "Bondora Summary",
-    accountNumber = "Bondora Summary",
+  local goandgrow = {
+    name = "Go&Grow",
+    accountNumber = "Go&Grow",
+    currency = currency,
+    portfolio = true,
+    type = "AccountTypePortfolio"
+  }
+  local wallet = {
+    name = "Wallet",
+    accountNumber = "Wallet",
     currency = currency,
     portfolio = true,
     type = "AccountTypePortfolio"
   }
 
-  return {account}
+
+  return {goandgrow, wallet}
 end
 
 function AccountSummary ()
@@ -64,11 +72,15 @@ end
 
 function RefreshAccount (account, since)
   local s = {}
+  
+  print("Refresh2")
+  print(account.accountNumber)
 
   summary = AccountSummary()
 
   local value = summary.Stats[1].ValueTooltip
   local profit = summary.Stats[2].ValueTooltip
+  local wallet = summary.Stats[3].ValueTooltip
   local numberRegex = "[^%d|.|-]"
 
   print("Profit (raw): " .. profit)
@@ -76,29 +88,57 @@ function RefreshAccount (account, since)
 
   profit = string.gsub(profit, numberRegex, "")
   value = string.gsub(value, numberRegex, "")
+  wallet = string.gsub(wallet, numberRegex, "")
 
-  print("Profit (extracted number): " .. profit)
   print("Value (extracted number): " .. value)
+  print("Wallet (extracted number):" .. wallet)
+  print("Profit (extracted number): " .. profit)
 
-  print("Profit (in Euros): " .. tonumber(profit))
   print("Value (in Euros): " .. tonumber(value))
+  print("Wallet (in Euros):" .. tonumber(wallet))
+  print("Profit (in Euros): " .. tonumber(profit))
 
-  local purchasePrice = (tonumber(value) - tonumber(profit))
+  local currentPrice = (tonumber(value) - tonumber(wallet))
+  local purchasePrice = (currentPrice - tonumber(profit))
+  
+
 
   print("Purchase price: " .. purchasePrice)
   
   local security = {
     name = "Account",
-    price = tonumber(value),
+    quantity = 1,
+    currency = nil,
+  }
+
+  if account.accountNumber == "Go&Grow" then
+    
+    security.price = currentPrice
+    security.purchasePrice = purchasePrice
+    
+  elseif account.accountNumber =="Wallet" then
+    security.price = wallet
+    security.purchasePrice = wallet
+  else
+    error("invalid account")
+  end 
+
+  --[[
+  local security = {
+    name = "Account",
+    price = currentPrice,
     quantity = 1,
     purchasePrice = purchasePrice,
     currency = nil,
   }
+  --]]
+
 
   table.insert(s, security)
 
   return {securities = s}
 end
+
 
 function EndSession ()
   local url = baseUrl .. "/authorize/logout/"
