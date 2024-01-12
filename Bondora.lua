@@ -12,14 +12,15 @@ local html
 -- Constants
 local currency = "EUR"
 local locale = "en"
-local baseUrl = "https://www.bondora.com/" .. locale
+local baseUrl = "https://www.bondora.com"
+local baseUrlLocale = "https://www.bondora.com/" .. locale
 
 function SupportsBank (protocol, bankCode)
   return protocol == ProtocolWebBanking and bankCode == "Bondora Account"
 end
 
 function InitializeSession (protocol, bankCode, username, username2, password, username3)
-  local url = baseUrl .. "/login"
+  local url = baseUrlLocale .. "/login"
   MM.printStatus("Login: " .. url)
 
   -- Fetch login page
@@ -54,7 +55,7 @@ function AccountSummary ()
   local headers = {accept = "application/json"}
   local content = connection:request(
     "GET",
-    baseUrl .. "/dashboard/overviewnumbers/",
+    baseUrl .. "/api/GoGrowDashboard/GoGrowDashboardAccountInfo",
     "",
     "application/json",
     headers
@@ -67,8 +68,8 @@ function RefreshAccount (account, since)
 
   summary = AccountSummary()
 
-  local value = summary.Stats[1].ValueTooltip
-  local profit = summary.Stats[2].ValueTooltip
+  local value = summary.CurrentAccountValue
+  local profit = summary.GainedTotal
   local numberRegex = "[^%d|.|-]"
 
   print("Profit (raw): " .. profit)
@@ -86,7 +87,7 @@ function RefreshAccount (account, since)
   local purchasePrice = (tonumber(value) - tonumber(profit))
 
   print("Purchase price: " .. purchasePrice)
-  
+
   local security = {
     name = "Account",
     price = tonumber(value),
@@ -101,7 +102,7 @@ function RefreshAccount (account, since)
 end
 
 function EndSession ()
-  local url = baseUrl .. "/authorize/logout/"
+  local url = baseUrlLocale .. "/authorize/logout/"
   MM.printStatus("Logout: " .. url)
   connection:get(url)
   return nil
