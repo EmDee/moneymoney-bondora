@@ -107,5 +107,3 @@ function EndSession ()
   connection:get(url)
   return nil
 end
-
--- SIGNATURE: MCwCFQCTUbXmmBzwn+HcaBSuZ5cJgbiBuwITBD7d01qCIvvJxquVlzDa4JMDFA==
