@@ -1,5 +1,5 @@
 WebBanking {
-  version = 1.3,
+  version = 1.5,
   url = "https://www.bondora.com",
   description = "Bondora Account",
   services = { "Bondora Account" }
@@ -13,7 +13,8 @@ local html
 local currency = "EUR"
 local locale = "en"
 local baseUrl = "https://www.bondora.com"
-local baseUrlLocale = "https://www.bondora.com/" .. locale
+local apiBaseUrl = "https://api.prd.bondora.com"
+local baseUrlLocale = "https://app.bondora.com/" .. locale
 
 function SupportsBank (protocol, bankCode)
   return protocol == ProtocolWebBanking and bankCode == "Bondora Account"
@@ -55,7 +56,7 @@ function AccountSummary ()
   local headers = {accept = "application/json"}
   local content = connection:request(
     "GET",
-    baseUrl .. "/api/GoGrowDashboard/GoGrowDashboardAccountInfo",
+    apiBaseUrl .. "/investor/api/GoGrowDashboard/GoGrowDashboardAccountInfo",
     "",
     "application/json",
     headers
