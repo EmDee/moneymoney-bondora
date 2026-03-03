@@ -1,3 +1,7 @@
+# OUTDATED
+
+This extension is not being maintianed anymore. See https://github.com/mdohnke/moneymoney-bondora-oauth for a more up2date implementation.
+
 # moneymoney-bondora
 MoneyMoney extension for Bondora
 
